@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glycemic Index Search</title>
+    <link rel="stylesheet" href="../static/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="d-flex h-100 text-center text-white bg-dark">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <header class="mb-auto">
+            <h3 class="float-md-start mb-0">GI Search</h3>
+        </header>
+        <main class="px-3">
+            <h1>음식 혈당지수 검색</h1>
+            <form id="search-form" class="d-flex">
+                <input id="search-input" class="form-control me-2" type="search" placeholder="Search for a food" aria-label="Search">
+                <button class="btn btn-lg btn-secondary fw-bold border-white bg-white text-dark" type="submit">검색</button>
+            </form>
+            <div id="result" class="mt-4"></div> <!-- 결과 표시 영역 -->
+        </main>
+        <footer class="mt-auto text-white-50">
+            <p>Powered by Flask and Bootstrap.</p>
+        </footer>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#search-form").on("submit", function (e) {
+                e.preventDefault(); // 폼 제출 방지
+
+                const searchQuery = $("#search-input").val().trim(); // 입력값 가져오기
+
+                if (searchQuery === "") {
+                    $("#result").html('<p class="text-warning">검색어를 입력하세요.</p>');
+                    return;
+                }
+
+                // AJAX 요청
+                $.ajax({
+                    url: "/search",
+                    type: "POST",
+                    contentType: "application/json",  // JSON 형식으로 전송
+                    data: JSON.stringify({ search: searchQuery }),  // JSON 데이터로 전송
+                    success: function (response) {
+                        if (response.success) {
+                            $("#result").html(`
+                                <div class="text-start bg-light text-dark p-3 rounded">
+                                    <h5>${response.food} 영양 정보:</h5>
+                                    <ul>
+                                        <li><strong>혈당지수 (GI):</strong> ${response.info.GI}</li>
+                                        <li><strong>칼로리:</strong> ${response.info.Calories} kcal</li>
+                                    </ul>
+                                </div>
+                            `);
+                        } else {
+                            $("#result").html('<p class="text-danger">검색한 음식 정보를 찾을 수 없습니다.</p>');
+                        }
+                    },
+                    error: function () {
+                        $("#result").html('<p class="text-danger">서버에 문제가 발생했습니다. 나중에 다시 시도하세요.</p>');
+                    }
+                });
+
+            });
+        });
+    </script>
+</body>
+</html>
